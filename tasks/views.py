@@ -71,13 +71,15 @@ def analyze_tasks(request):
 
         try:
             detect_cycle(graph)
-
-            ranked = score_tasks(tasks, graph)
+            mode = request.GET.get("mode", "smart")
+            if mode not in ["smart", "fastest", "impact", "deadline"]:
+                raise ValidationError("Invalid sort mode")
+            
+            ranked = score_tasks(tasks, graph, mode)
 
             return JsonResponse({
                 "warnings": Warnings,
-                "ranked_tasks": ranked,
-                "top_3": ranked[:3]
+                "ranked_tasks": ranked
             })
         
         except CycleError as e:

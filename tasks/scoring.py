@@ -141,19 +141,46 @@ def build_dependents_map(tasks):
 def is_blocked(task):
     return len(task["dependencies"]) > 0
 
-WEIGHTS = {
-    "urgency": 0.40,
-    "importance": 0.25,
-    "dependency": 0.20,
-    "effort": 0.15
-}
-
 BLOCKED_PENALTY = 0.4
 
 PRIORITY_RANGE = {
     0.75: "High"
 }
 
+SMART_WEIGHT = {
+    "urgency": 0.40,
+    "importance": 0.25,
+    "dependency": 0.20,
+    "effort": 0.15
+}
+
+FAST_WEIGHT = {
+    "effort": 0.50,
+    "urgency": 0.20,
+    "importance": 0.15,
+    "dependency": 0.10
+}
+
+IMPACT_WEIGHT = {
+    "importance": 0.50,
+    "dependency": 0.25,
+    "urgency": 0.15,
+    "effort": 0.10
+}
+
+DEADLINE_WEIGHT = {
+    "urgency": 0.55,
+    "importance": 0.20,
+    "dependency": 0.15,
+    "effort": 0.10
+}
+
+WEIGHT_METHOD = {
+    "smart": SMART_WEIGHT,
+    "fastest": FAST_WEIGHT,
+    "impact": IMPACT_WEIGHT,
+    "deadline": DEADLINE_WEIGHT
+}
 
 def compute_depth(task_id, graph, memo):
     if task_id not in graph or not graph[task_id]:
@@ -166,10 +193,11 @@ def compute_depth(task_id, graph, memo):
     return memo[task_id]
 
 
-def score_tasks(tasks, graph):
+def score_tasks(tasks, graph, mode):
     dependents_map = build_dependents_map(tasks)
     depth_cache = {}
     results = []
+    WEIGHTS = WEIGHT_METHOD[mode]
 
     for task in tasks:
         urgent_score = urgent_score_fun(task["due_date"])
@@ -211,9 +239,20 @@ def score_tasks(tasks, graph):
             "score": round(priority_score, 2),
             "priority_indicator": "High" if priority_score >= 0.75 else "Medium" if priority_score >= 0.40 else "Low",
             "depth": depth,
+            "urgency_score": urgent_score,
+            "importance_score": important_score,
+            "effort_score": effor_score,
+            "dependency_score": dependency_score,
             "reasons": reasons
         })
 
-    results.sort(key=lambda x: (x["depth"], -x["score"]))
+    if mode == "fastest":
+        results.sort(key=lambda x: (x["depth"], -x["effort_score"]))
+    elif mode == "impact":
+        results.sort(key=lambda x: (x["depth"], -x["importance_score"]))
+    elif mode == "deadline":
+        results.sort(key=lambda x: (x["depth"], -x["urgency_score"]))
+    else:
+        results.sort(key=lambda x: (x["depth"], -x["score"]))
 
     return results
