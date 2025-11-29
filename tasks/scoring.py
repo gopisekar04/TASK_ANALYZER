@@ -4,6 +4,9 @@ from collections import defaultdict
 class ValidationError(Exception):
     pass 
 
+class CycleError(Exception):
+    pass
+
 def validate_tasks(tasks):
 
     """
@@ -102,9 +105,13 @@ def urgent_score_fun(due_date):
     return 0.10
 
 def important_score_fun(importance):
+    # normalize the user given importance
+
     return importance/10
 
 def effor_score_fun(estimated_hours):
+    # lesser the time required to complete the task higher the effort_score
+
     if estimated_hours <= 1:
         return 1.00
     elif 2 <= estimated_hours <= 4:
@@ -114,6 +121,8 @@ def effor_score_fun(estimated_hours):
     return 0.20
 
 def dependency_score_fun(no_of_dependents):
+    # more dependent tasks higher priority
+
     if no_of_dependents == 0:
         return 0.0
     elif no_of_dependents == 1:
@@ -131,6 +140,45 @@ def build_dependents_map(tasks):
 
     return depentents
 
+def build_graph(tasks):
+    """
+    Returns adjacency list: task -> dependencies
+    """
+    graph = defaultdict(list)
+
+    for task in tasks:
+        graph[task["id"]] = task["dependencies"]
+
+    return graph
+
+def detect_cycle(graph):
+    visited = set()
+    stack = []
+    in_stack = set()
+
+    def dfs(node):
+        if node in in_stack:
+            # return actual cycle path
+            i = stack.index(node)
+            cycle_path = stack[i:] + [node]
+            raise CycleError(" → ".join(map(str, cycle_path)))
+
+        if node in visited:
+            return
+
+        visited.add(node)
+        stack.append(node)
+        in_stack.add(node)
+
+        for neighbor in graph[node]:
+            dfs(neighbor)
+
+        stack.pop()
+        in_stack.remove(node)
+
+    for node in graph:
+        dfs(node)
+
 def is_blocked(task):
     return len(task["dependencies"]) > 0
 
@@ -143,6 +191,10 @@ WEIGHTS = {
 
 BLOCKED_PENALTY = 0.4
 
+PRIORITY_RANGE = {
+    0.75: "High"
+}
+
 def score_tasks(tasks):
     dependents_map = build_dependents_map(tasks)
     results = []
@@ -153,7 +205,7 @@ def score_tasks(tasks):
         effor_score = effor_score_fun(task["estimated_hours"])
         dependency_score = dependency_score_fun(len(dependents_map[task["id"]]))
 
-        final_score = (
+        priority_score = (
             urgent_score * WEIGHTS["urgency"] +
             important_score * WEIGHTS["importance"] + 
             effor_score * WEIGHTS["effort"] +
@@ -162,13 +214,14 @@ def score_tasks(tasks):
 
         blocked = is_blocked(task)
         if blocked:
-            final_score *= BLOCKED_PENALTY
+            priority_score *= BLOCKED_PENALTY
 
         reasons = []
         if urgent_score >= 0.85:
             if urgent_score == 1.0:
                 reasons.append(f"Deadline crossed")
-            reasons.append(f"Urgent Deadline {task["due_date"]}")
+            else:
+                reasons.append(f"Urgent Deadline {task["due_date"]}")
         if important_score >= 0.8:
             reasons.append("High importance")
         if effor_score >= 0.7:
@@ -176,12 +229,13 @@ def score_tasks(tasks):
         if dependency_score >= 0.7:
             reasons.append("Unblocks other tasks")  
         if blocked:
-            reasons.append("Currently blocked")
+            reasons.append(f"Currently blocked by task/s {task["dependencies"]}")
         
         results.append({
             "id": task["id"],
             "title": task["title"],
-            "score": round(final_score, 2),
+            "score": round(priority_score, 2),
+            "priority_indicator": "High" if priority_score >= 0.75 else "Medium" if priority_score >= 0.40 else "Low",
             "reasons": reasons
         })
 
