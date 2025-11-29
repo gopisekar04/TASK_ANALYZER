@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .scoring import validate_tasks, score_tasks, ValidationError, CycleError
 from collections import defaultdict
+from tasks.models import Task
 
 
 def build_graph(tasks):
@@ -93,3 +94,71 @@ def analyze_tasks(request):
         return JsonResponse({
             "error": str(e)
         }, status=400)
+    
+@csrf_exempt
+def add_task(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "error": "Only POST methos allowed"
+        })
+    
+    try:
+
+        data = json.loads(request.body)
+        raw_data = data.get("task")
+        if not raw_data:
+            return JsonResponse({
+                "message": "No task provided"
+            })
+
+        tasks, Warnings = validate_tasks([raw_data], require_id=False)
+        task = tasks[0]
+
+        obj = Task.objects.create(
+            title = task["title"],
+            due_date=task.get("due_date"),
+            estimated_hours=task["estimated_hours"],
+            importance=task["importance"],
+            dependencies=task["dependencies"]
+        )
+
+        return JsonResponse({
+            "message": 'Task added successfully',
+            "task_id": obj.id,
+            "warnings": Warnings
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "error": "Invalid JSON"
+        }, status=400)
+    except ValidationError as e:
+        return JsonResponse({
+            "error": str(e)
+        }, status=400)
+
+@csrf_exempt
+def suggest_tasks(request):
+
+    if request.method != "GET":
+        return JsonResponse({
+            "error": "Only GET method allowed"
+        })
+    db_data = Task.objects.all()
+
+    data = [
+        {
+            "id": t.id,
+            "title": t.title,
+            "due_date": t.due_date,
+            "estimated_hours": t.estimated_hours,
+            "importance": t.importance,
+            "dependencies": t.dependencies
+        }
+        for t in db_data
+    ]
+
+    return JsonResponse({
+        "Message": "/suggest route",
+        "tasks": data
+    })
