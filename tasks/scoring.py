@@ -82,8 +82,6 @@ def validate_tasks(tasks):
 
     return normalized, Warnings
 
-
-
 def urgent_score_fun(due_date):
     if not due_date:
         return 0.05
@@ -140,45 +138,6 @@ def build_dependents_map(tasks):
 
     return depentents
 
-def build_graph(tasks):
-    """
-    Returns adjacency list: task -> dependencies
-    """
-    graph = defaultdict(list)
-
-    for task in tasks:
-        graph[task["id"]] = task["dependencies"]
-
-    return graph
-
-def detect_cycle(graph):
-    visited = set()
-    stack = []
-    in_stack = set()
-
-    def dfs(node):
-        if node in in_stack:
-            # return actual cycle path
-            i = stack.index(node)
-            cycle_path = stack[i:] + [node]
-            raise CycleError(" → ".join(map(str, cycle_path)))
-
-        if node in visited:
-            return
-
-        visited.add(node)
-        stack.append(node)
-        in_stack.add(node)
-
-        for neighbor in graph[node]:
-            dfs(neighbor)
-
-        stack.pop()
-        in_stack.remove(node)
-
-    for node in graph:
-        dfs(node)
-
 def is_blocked(task):
     return len(task["dependencies"]) > 0
 
@@ -195,8 +154,21 @@ PRIORITY_RANGE = {
     0.75: "High"
 }
 
-def score_tasks(tasks):
+
+def compute_depth(task_id, graph, memo):
+    if task_id not in graph or not graph[task_id]:
+        return 0
+
+    if task_id in memo:
+        return memo[task_id]
+
+    memo[task_id] = 1 + max(compute_depth(dep, graph, memo) for dep in graph[task_id])
+    return memo[task_id]
+
+
+def score_tasks(tasks, graph):
     dependents_map = build_dependents_map(tasks)
+    depth_cache = {}
     results = []
 
     for task in tasks:
@@ -215,6 +187,8 @@ def score_tasks(tasks):
         blocked = is_blocked(task)
         if blocked:
             priority_score *= BLOCKED_PENALTY
+
+        depth = compute_depth(task["id"], graph, depth_cache)
 
         reasons = []
         if urgent_score >= 0.85:
@@ -236,12 +210,10 @@ def score_tasks(tasks):
             "title": task["title"],
             "score": round(priority_score, 2),
             "priority_indicator": "High" if priority_score >= 0.75 else "Medium" if priority_score >= 0.40 else "Low",
+            "depth": depth,
             "reasons": reasons
         })
 
-    results.sort(
-        key=lambda x: x["score"],
-        reverse=True
-    )
+    results.sort(key=lambda x: (x["depth"], -x["score"]))
 
     return results

@@ -2,8 +2,48 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .scoring import validate_tasks, build_graph, detect_cycle, score_tasks, ValidationError, CycleError
+from .scoring import validate_tasks, score_tasks, ValidationError, CycleError
+from collections import defaultdict
 
+
+def build_graph(tasks):
+    """
+    Returns adjacency list: task -> dependencies
+    """
+    graph = defaultdict(list)
+
+    for task in tasks:
+        graph[task["id"]] = task["dependencies"]
+
+    return graph
+
+def detect_cycle(graph):
+    visited = set()
+    stack = []
+    in_stack = set()
+
+    def dfs(node):
+        if node in in_stack:
+            # return actual cycle path
+            i = stack.index(node)
+            cycle_path = stack[i:] + [node]
+            raise CycleError(" → ".join(map(str, cycle_path)))
+
+        if node in visited:
+            return
+
+        visited.add(node)
+        stack.append(node)
+        in_stack.add(node)
+
+        for neighbor in graph[node]:
+            dfs(neighbor)
+
+        stack.pop()
+        in_stack.remove(node)
+
+    for node in graph:
+        dfs(node)
 
 @csrf_exempt
 def analyze_tasks(request):
@@ -32,7 +72,7 @@ def analyze_tasks(request):
         try:
             detect_cycle(graph)
 
-            ranked = score_tasks(tasks)
+            ranked = score_tasks(tasks, graph)
 
             return JsonResponse({
                 "warnings": Warnings,
