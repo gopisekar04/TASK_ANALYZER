@@ -111,3 +111,6 @@ Weight for each score
 The depth of each task lets us sort the tasks ensuring no blocked tasks floats above its dependencies.
 
 ## Sorting based on depth and priority_score
+
+# CHECKPOINT - 1
+Currently the application receives JSON list as input and query parameter for different sorting techniques like quick completion, high impact, deadline based, finally the intelligent scoring (smart) and return the appropritely sorted JSON list to the user.
