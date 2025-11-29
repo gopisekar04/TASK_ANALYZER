@@ -66,15 +66,22 @@ def validate_tasks(tasks, require_id=True):
         # Due date (optional)
         due = task.get("due_date")
         if due:
-            try:
-                task["due_date"] = datetime.strptime(due, "%Y-%m-%d").date()
-                if task["due_date"] < date.today():
-                    Warnings.append(f"'{task['title']}': task is overdue")
-            except ValueError:
-                raise ValidationError("invalid due_date format (use YYYY-MM-DD)")
+            if isinstance(due, date):
+                task["due_date"] = due
+            elif isinstance(due, str):
+                try:
+                    task["due_date"] = datetime.strptime(due, "%Y-%m-%d").date()
+                except ValueError:
+                    raise ValidationError("invalid due_date format (use YYYY-MM-DD)")
+            else:
+                raise ValidationError("due_date must be string or date")
+
+            if task["due_date"] < date.today():
+                Warnings.append(f"'{task['title']}': task is overdue")
         else:
             task["due_date"] = None
             Warnings.append(f"'{task['title']}': due_date missing")
+
 
 
         # Dependencies
@@ -281,6 +288,7 @@ def score_tasks(tasks, graph, mode):
         "importance": task["importance"],
         "priority_score": task["score"],
         "priority_indicator": task["priority_indicator"],
+        "depth": depth,
         "reasons": reasons
     } for task in results]
 
