@@ -114,3 +114,26 @@ The depth of each task lets us sort the tasks ensuring no blocked tasks floats a
 
 # CHECKPOINT - 1
 Currently the application receives JSON list as input and query parameter for different sorting techniques like quick completion, high impact, deadline based, finally the intelligent scoring (smart) and return the appropritely sorted JSON list to the user.
+
+## Phase 2 - Using DB to store the tasks and score them
+In this phase, tasks will be stored in the database and used for real-time analysis and recommendations.
+
+All priority decisions will now operate on persisted data, not temporary JSON.
+
+## Step 1 - create Task Model
+Run migrations and register model in admin.
+
+## Step 2 - Add Task API
+Create endpoint:
+`POST /api/tasks/add`
+what is does? 
+- Validate request
+- Store tasks in DB
+
+## Step 3 - Suggest Stored Tasks
+Create endpoint:
+`GET /api/tasks/suggest?mode=smart`
+What is does?
+- Load from DB
+- Rank using scoring engine
+- Return top 3 tasks with reasons
