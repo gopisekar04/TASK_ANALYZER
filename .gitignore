@@ -2,3 +2,4 @@ venv/
 /backend/__pycache__
 /tasks/__pycache__
 .env
+db.sqlite3
