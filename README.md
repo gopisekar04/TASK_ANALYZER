@@ -32,7 +32,7 @@ Then it:
 
 ## Development Approach
 
-Phase 1 — Intelligence First (No Database)
+## Phase 1 — Intelligence First (No Database)
 
 First, the algorithm is built to:
 
@@ -40,5 +40,68 @@ First, the algorithm is built to:
 - Compute a score for each task
 - Sort and suggest the best tasks
 
-No database is required for this stage as to understand what data is actually needed before actually determining the model and later adjusting often. Also scoring algorithm is determins the schema not the other way around.
+No database is required for this stage as to understand what data is actually needed before actually determining the model rather than adjusting often later. Also scoring algorithm is determins the schema not the other way around.
 
+## step 1 - Receive data and validate
+The request is received in tasks/views.py
+
+- check if "tasks" exists if empty list return `"message": "Empty list"`
+- check that each task has required fields and respective data type
+- Handle missing values - using default values if safe to use eg. importance = 5 (medium), dependencies = [] (empty list)
+- Cruial fields such as title, due_date, estimated_hours - if missing return `"error": "Missing required fields"` 
+
+## step 2 - Construct dependency list
+- Which task depends on whom
+- which task blocks others
+
+## step 3 - Detect circular dependencies
+- If cycle is detected `"error": "Circualar dependency detected"`
+- else continue
+
+## step 4 - Compute dependency score
+- The final is a cumulative based on 4 different scores given to each task
+### i. urgency_score
+
+| condition | Score|
+| :--- | :--- |
+| Overdue | 1.00 |
+| Today | 0.95 |
+| Tomorrow | 0.85 |
+| 2-3 days | 0.65 |
+| 4-7 days | 0.40 |
+| 8-14 dasys | 0.20 |
+| >14 days | 0.10 |
+
+### ii. Importance score
+Normalize the user provided imprtance
+`importance_score = importance / 10`
+
+### iii. Effort Score
+Lower efforts receive higher score
+
+| Hours | Score |
+| :--- | :--- |
+| <=1 | 1.00 |
+| 2-4 | 0.70 |
+| 5-8 | 0.40 |
+| >8 | 0.20 |
+
+### Dependency Score
+
+| No. of dependents | Score |
+| :--- | :--- |
+| 0 | 0.00 | 
+| 1 | 0.40 |
+| 2 | 0.70 |
+| >3 | 1.00 |
+
+### Final Score Formula
+Weight for each score
+| Score | weight % |
+| :--- | :--- |
+| urgency_score | 40% |
+| importance_score | 25% |
+| dependency_score | 20% |
+| effor_score | 15% |
+
+`final_score = (urgency_score * 0.40) + (importance_score * 0.25) + (dependency_score * 0.20) + (effor_score * 0.15)`
