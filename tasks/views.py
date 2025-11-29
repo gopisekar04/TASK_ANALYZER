@@ -2,7 +2,7 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .scoring import validate_tasks, ValidationError
+from .scoring import validate_tasks, score_tasks, ValidationError
 
 
 @csrf_exempt
@@ -20,10 +20,13 @@ def analyze_tasks(request):
                 "Message": "No tasks available to analyze"
             })
         tasks, Warnings = validate_tasks(raw_tasks)
+        ranked = score_tasks(tasks)
+
 
         return JsonResponse({
             "warnings": Warnings,
-            "tasks": tasks
+            "ranked_tasks": ranked,
+            "top_3": ranked[:3]
         })
         
     except json.JSONDecodeError:
