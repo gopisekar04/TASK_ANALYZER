@@ -104,4 +104,9 @@ Weight for each score
 | dependency_score | 20% |
 | effor_score | 15% |
 
-`final_score = (urgency_score * 0.40) + (importance_score * 0.25) + (dependency_score * 0.20) + (effor_score * 0.15)`
+`priority_score = (urgency_score * 0.40) + (importance_score * 0.25) + (dependency_score * 0.20) + (effor_score * 0.15)`
+
+## Find depth of each task
+The depth of each task lets us sort the tasks ensuring no blocked tasks floats above its dependencies.
+
+## Sorting based on depth and priority_score
