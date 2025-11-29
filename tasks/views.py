@@ -2,7 +2,7 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .scoring import score_task
+from .scoring import validate_tasks, ValidationError
 
 
 @csrf_exempt
@@ -14,19 +14,24 @@ def analyze_tasks(request):
 
     try:
         data = json.loads(request.body)
-        tasks = data.get("tasks", [])
+        raw_tasks = data.get("tasks", [])
+        if not raw_tasks:
+            return JsonResponse({
+                "Message": "No tasks available to analyze"
+            })
+        tasks, Warnings = validate_tasks(raw_tasks)
+
+        return JsonResponse({
+            "warnings": Warnings,
+            "tasks": tasks
+        })
+        
     except json.JSONDecodeError:
         return JsonResponse({
             "error": "Invalid JSON"
         }, status=400)
+    except ValidationError as e:
+        return JsonResponse({
 
-    results = []
-
-    for task in tasks:
-        score = score_task(task)
-        results.append({
-            "title": task.get("title"),
-            "score": score
-        })
-
-        return JsonResponse(results, safe=False)
+            "error": str(e)
+        }, status=400)
