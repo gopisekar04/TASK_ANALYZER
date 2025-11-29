@@ -236,6 +236,9 @@ def score_tasks(tasks, graph, mode):
         results.append({
             "id": task["id"],
             "title": task["title"],
+            "due_date": task["due_date"],
+            "effort": task["estimated_hours"],
+            "importance": task["importance"],
             "score": round(priority_score, 2),
             "priority_indicator": "High" if priority_score >= 0.75 else "Medium" if priority_score >= 0.40 else "Low",
             "depth": depth,
@@ -255,4 +258,16 @@ def score_tasks(tasks, graph, mode):
     else:
         results.sort(key=lambda x: (x["depth"], -x["score"]))
 
-    return results
+    final_modified_result = [{
+        "id": task["id"],
+        "title": task["title"],
+        "due_date": task["due_date"],
+        "effort": task["effort"],
+        "importance": task["importance"],
+        "priority_score": task["score"],
+        "priority_indicator": task["priority_indicator"],
+        "reasons": reasons
+    } for task in results]
+
+
+    return final_modified_result
