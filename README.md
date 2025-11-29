@@ -10,6 +10,7 @@ It reasons about urgency, importance, effort and dependencies and returns the to
 
 Each task has:
 
+- id
 - Title
 - Due date
 - Estimated hours
@@ -59,7 +60,7 @@ The request is received in tasks/views.py
 - else continue
 
 ## step 4 - Compute dependency score
-- The final is a cumulative based on 4 different scores given to each task
+- The priority_score is a cumulative based on 4 different scores given to each task
 ### i. urgency_score
 
 | condition | Score|
