@@ -168,7 +168,7 @@ Returns **top 3 executable** tasks (depth = 0).
 ### Install & Run
 
 ```bash
-git clone <repo_url>
+git clone https://github.com/gopisekar04/TASK_ANALYZER.git
 cd task_analyzer
 python -m venv venv
 # Windows
