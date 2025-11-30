@@ -7,6 +7,48 @@ from collections import defaultdict
 from tasks.models import Task
 
 
+@csrf_exempt
+def add_task(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "error": "Only POST methos allowed"
+        })
+    
+    try:
+
+        data = json.loads(request.body)
+        raw_data = data.get("task")
+        if not raw_data:
+            return JsonResponse({
+                "message": "No task provided"
+            })
+
+        tasks, Warnings = validate_tasks([raw_data], require_id=False)
+        task = tasks[0]
+
+        obj = Task.objects.create(
+            title = task["title"],
+            due_date=task.get("due_date"),
+            estimated_hours=task["estimated_hours"],
+            importance=task["importance"],
+            dependencies=task["dependencies"]
+        )
+
+        return JsonResponse({
+            "message": 'Task added successfully',
+            "id": obj.id
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "error": "Invalid JSON"
+        }, status=400)
+    except ValidationError as e:
+        return JsonResponse({
+            "error": str(e)
+        }, status=400)
+
+
 def build_graph(tasks):
     """
     Returns adjacency list: task -> dependencies
@@ -69,6 +111,7 @@ def analyze_tasks(request):
         """
 
         graph = build_graph(tasks)
+        print(graph)
 
         try:
             detect_cycle(graph)
@@ -95,47 +138,6 @@ def analyze_tasks(request):
             "error": str(e)
         }, status=400)
     
-@csrf_exempt
-def add_task(request):
-    if request.method != "POST":
-        return JsonResponse({
-            "error": "Only POST methos allowed"
-        })
-    
-    try:
-
-        data = json.loads(request.body)
-        raw_data = data.get("task")
-        if not raw_data:
-            return JsonResponse({
-                "message": "No task provided"
-            })
-
-        tasks, Warnings = validate_tasks([raw_data], require_id=False)
-        task = tasks[0]
-
-        obj = Task.objects.create(
-            title = task["title"],
-            due_date=task.get("due_date"),
-            estimated_hours=task["estimated_hours"],
-            importance=task["importance"],
-            dependencies=task["dependencies"]
-        )
-
-        return JsonResponse({
-            "message": 'Task added successfully',
-            "id": obj.id
-        })
-
-    except json.JSONDecodeError:
-        return JsonResponse({
-            "error": "Invalid JSON"
-        }, status=400)
-    except ValidationError as e:
-        return JsonResponse({
-            "error": str(e)
-        }, status=400)
-
 @csrf_exempt
 def suggest_tasks(request):
 

@@ -205,13 +205,18 @@ WEIGHT_METHOD = {
 }
 
 def compute_depth(task_id, graph, memo):
-    if task_id not in graph or not graph[task_id]:
-        return 0
-
     if task_id in memo:
         return memo[task_id]
 
-    memo[task_id] = 1 + max(compute_depth(dep, graph, memo) for dep in graph[task_id])
+    if task_id not in graph or not graph[task_id]:
+        memo[task_id] = 0
+        return 0
+
+    max_dependency_depth = 0
+    for dependency in graph[task_id]:
+        max_dependency_depth = max(max_dependency_depth, compute_depth(dependency, graph, memo))
+    
+    memo[task_id] = 1 + max_dependency_depth
     return memo[task_id]
 
 
@@ -288,7 +293,7 @@ def score_tasks(tasks, graph, mode):
         "importance": task["importance"],
         "priority_score": task["score"],
         "priority_indicator": task["priority_indicator"],
-        "depth": depth,
+        "depth": task["depth"],
         "reasons": task["reasons"]
     } for task in results]
 

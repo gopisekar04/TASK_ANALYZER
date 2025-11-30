@@ -1,5 +1,11 @@
 const API = "http://127.0.0.1:8000/api/tasks";
 
+document.getElementById("addTaskForm")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
+    addTask();
+  });
+
 function showError(msg) {
   document.getElementById("error").innerText = msg;
 }
@@ -7,7 +13,6 @@ function showError(msg) {
 function clearError() {
   document.getElementById("error").innerText = "";
 }
-
 
 function appendTask(task) {
   const container = document.getElementById("taskList");
@@ -22,11 +27,12 @@ function appendTask(task) {
     table.innerHTML = `
       <thead>
         <tr>
-          <th>id</th>
-          <th>title</th>
-          <th>effort</th>
-          <th>importance</th>
-          <th>dependencies</th>
+          <th>Id</th>
+          <th>Title</th>
+          <th>Estimated Time</th>
+          <th>Importance</th>
+          <th>Due Date</th>
+          <th>Dependencies</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -44,19 +50,12 @@ function appendTask(task) {
     <td>${task.title}</td>
     <td>${task.estimated_hours} hr</td>
     <td>${task.importance}</td>
+    <td>${task.due_date}</td>
     <td>${task.dependencies.join(", ") || "None"}</td>
   `;
 
   tbody.appendChild(row);
 }
-
-
-document.getElementById("addTaskForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
-    addTask();
-  });
-
 
 async function addTask() {
   clearError();
@@ -93,7 +92,6 @@ async function addTask() {
       dependencies: data.task.dependencies
     });
 
-    if (json.warnings?.length) alert(json.warnings.join("\n"));
 
   } catch (err) {
     showError(err.message);
@@ -217,10 +215,11 @@ function renderTasks(tasks) {
     <thead>
       <tr>
         <th>id</th>
-        <th>title</th>
-        <th>effort</th>
-        <th>importance</th>
-        <th>dependencies</th>
+        <th>Title</th>
+        <th>Estimated Time</th>
+        <th>Importance</th>
+        <th>Due Date
+        <th>Dependencies</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -231,6 +230,26 @@ function renderTasks(tasks) {
   tasks.forEach(task => appendTask(task, tbody));
 }
 
+async function suggest(){
+  clearError();
+
+  const mode = document.getElementById("mode").value;
+
+  try {
+    const res = await fetch(API + `/suggest/?mode=${mode}`);
+
+    const text = await res.text();     // debug-safe
+    const json = JSON.parse(text);     // avoid JSON crash
+
+    if (!res.ok) throw new Error(json.error || "Suggestion failed");
+
+    renderResults(json.top_3 || []);
+
+  } catch (err) {
+    showError(err.message);
+  }
+
+}
 
 async function loadTasks() {
   try {

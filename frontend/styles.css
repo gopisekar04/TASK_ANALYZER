@@ -55,3 +55,6 @@ ul{
   display: flex;
   align-items: center;
 }
+.error{
+  margin: 10px 0 10px 0;
+}
