@@ -289,7 +289,7 @@ def score_tasks(tasks, graph, mode):
         "priority_score": task["score"],
         "priority_indicator": task["priority_indicator"],
         "depth": depth,
-        "reasons": reasons
+        "reasons": task["reasons"]
     } for task in results]
 
 

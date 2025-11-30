@@ -124,8 +124,7 @@ def add_task(request):
 
         return JsonResponse({
             "message": 'Task added successfully',
-            "task_id": obj.id,
-            "warnings": Warnings
+            "id": obj.id
         })
 
     except json.JSONDecodeError:
@@ -189,3 +188,22 @@ def suggest_tasks(request):
 
     except Exception as e:
         return JsonResponse({"error": "Internal server error", "detail": str(e)}, status=500)
+    
+
+@csrf_exempt
+def clear_tasks(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    Task.objects.all().delete()
+    return JsonResponse({"message": "All tasks cleared"})
+
+@csrf_exempt
+def list_tasks(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+
+    data = list(Task.objects.values(
+        "id", "title", "due_date", "estimated_hours", "importance", "dependencies"
+    ))
+    return JsonResponse({"tasks": data})
