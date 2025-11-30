@@ -113,11 +113,58 @@ The same engine powers four modes by changing weights and sort key:
 
 Add one task (form). Validates, stores, returns IDs.
 
-### Analyze Stored Tasks
+```json
+{
+    "task": {
+        "title": "Fix signup bug",
+        "due_date": "2021-12-01",
+        "estimated_hours": 1,
+        "importance": 4,
+        "dependencies": []
+  }
+}
+```
 
-`PORT /api/tasks/analyze?mode=smart`
+### Analyze BULK JSON Tasks
 
-Returns **all** tasks sorted per selected mode.
+`POST /api/tasks/analyze?mode=smart`
+
+Returns **all** tasks sorted as per selected mode.
+
+```json
+// test data
+[
+    {
+      "id": 1,
+      "title": "Release hotfix",
+      "due_date": "2025-11-30",
+      "estimated_hours": 1,
+      "importance": 9,
+      "dependencies": [2]
+    },
+    {
+      "id": 2,
+      "title": "Fix core bug",
+      "due_date": "2024-11-22",
+      "estimated_hours": 4,
+      "importance": 8,
+      "dependencies": [3]
+    },
+    {
+      "id": 3,
+      "title": "Refactor auth module",
+      "estimated_hours": 6,
+      "importance": 7,
+      "dependencies": []
+    }
+  ]
+```
+
+### Analyze DB stored task
+
+`GET /api/tasks/analyze_db/?mode=smart`
+
+Returns **all** tasks stored in DB sorted as per selected mode.
 
 ### Suggest Today’s Work
 
