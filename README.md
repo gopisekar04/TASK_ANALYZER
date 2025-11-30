@@ -49,8 +49,7 @@ Each task receives four scores that are combined into a final **priority_score**
 | 2–3 days  | 0.65  |
 | 4–7 days  | 0.40  |
 | 8–14 days | 0.20  |
-
-> 14 days | 0.10 |
+| > 14 days | 0.10 |
 
 ### 2) Importance Score
 
@@ -63,8 +62,7 @@ Each task receives four scores that are combined into a final **priority_score**
 | ≤ 1   | 1.00  |
 | 2–4   | 0.70  |
 | 5–8   | 0.40  |
-
-> 8 | 0.20 |
+| > 8 | 0.20 |
 
 ### 4) Dependency Score (impact of unblocking)
 
@@ -73,7 +71,7 @@ Each task receives four scores that are combined into a final **priority_score**
 | 0          | 0.00  |
 | 1          | 0.40  |
 | 2          | 0.70  |
-| ≥ 3        | 1.00  |
+| >= 3        | 1.00  |
 
 ### Final Formula (Smart Balance)
 
@@ -132,6 +130,7 @@ Returns **top 3 executable** tasks (depth = 0).
 ```json
 {
   "mode": "smart",
+  "warnings": [],
   "top_3": [
     {
       "id": 3,
@@ -146,13 +145,12 @@ Returns **top 3 executable** tasks (depth = 0).
   ]
 }
 ```
-
----
+--- 
 
 ## Output Display (Frontend)
 
 * Color-coded priority: High / Medium / Low
-* Shows: title, due date, effort, importance, priority score
+* Shows: title, due date, effort, importance, priority score, flag
 * Renders explanation (“reasons”) per task
 
 ---
