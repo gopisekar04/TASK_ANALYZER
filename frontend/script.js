@@ -183,11 +183,11 @@ async function analyzeTask() {
 async function analyzeFromDB() {
   clearError();
 
-  const taskListData = document.getElementById("taskList").value
-  
-  if (taskListData === undefined){
-    showError("No tasks yet")
-    return
+  const rows = document.querySelectorAll("#taskList table tbody tr");
+
+  if (rows.length === 0) {
+    showError("No tasks yet");
+    return;
   }
 
   const mode = document.getElementById("mode").value;
@@ -262,11 +262,11 @@ function renderTasks(tasks) {
 async function suggest(){
   clearError();
 
-  const taskListData = document.getElementById("taskList").value
-  
-  if (taskListData === undefined){
-    showError("No tasks yet")
-    return
+  const rows = document.querySelectorAll("#taskList table tbody tr");
+
+  if (rows.length === 0) {
+    showError("No tasks yet");
+    return;
   }
   
 
