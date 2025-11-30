@@ -35,7 +35,16 @@
 
   <div class="panel">
     <h2>Bulk Add Tasks (JSON)</h2>
-    <textarea id="bulk" placeholder='[{"title":"Task","estimated_hours":2,"importance":5,"dependencies":[]}]'></textarea>
+    <textarea id="bulk" 
+    placeholder='
+    [
+      {
+        "title":"Task",
+        "estimated_hours":2,
+        "importance":5,
+        "dependencies":[]
+      }
+    ]'></textarea>
     </br>
     <button onclick="analyzeTask()">Analyze</button>
   </div>
