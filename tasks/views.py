@@ -135,7 +135,7 @@ def analyze_tasks(request):
         return JsonResponse({
             "error": str(e)
         }, status=400)
-    
+
 @csrf_exempt
 def suggest_tasks(request):
 

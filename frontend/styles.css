@@ -6,7 +6,18 @@ body {
 
 h1 { text-align: center; }
 
-.layout { display: flex; gap: 20px; }
+.layout { 
+  display: flex; 
+  flex-direction: column;
+  gap: 20px; 
+}
+
+@media screen and (min-width: 768px) {
+  .layout{
+    flex-direction: row;
+  }
+}
+
 
 .panel {
   background: white;
@@ -57,4 +68,8 @@ ul{
 }
 .error{
   margin: 10px 0 10px 0;
+}
+
+.sort-options{
+  width: 200px;
 }
