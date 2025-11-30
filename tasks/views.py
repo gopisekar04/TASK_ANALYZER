@@ -48,7 +48,6 @@ def add_task(request):
             "error": str(e)
         }, status=400)
 
-
 def build_graph(tasks):
     """
     Returns adjacency list: task -> dependencies
@@ -111,7 +110,6 @@ def analyze_tasks(request):
         """
 
         graph = build_graph(tasks)
-        print(graph)
 
         try:
             detect_cycle(graph)
@@ -191,7 +189,6 @@ def suggest_tasks(request):
     except Exception as e:
         return JsonResponse({"error": "Internal server error", "detail": str(e)}, status=500)
     
-
 @csrf_exempt
 def clear_tasks(request):
     if request.method != "POST":

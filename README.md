@@ -224,25 +224,15 @@ Covered:
 
 * Persist tasks
 * Analyze/Suggest from DB
-* Admin UI for test data
-
----
-
-## Time Breakdown (approx)
-
-* Architecture & algorithm design: ~3 hrs
-* Backend APIs & flow control: ~4 hours  
-* Database & migrations: ~2 hours  
-* Documentation & cleanup: ~1 hours  
 
 ---
 
 ## Future Improvements
 
-* Calendar integration
 * Visual dependency graphs
 * Marking tasks as completed
 * Prettify UI
+* feature to delete tasks
 
 ---
 
