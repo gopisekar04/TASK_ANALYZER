@@ -137,6 +137,52 @@ def analyze_tasks(request):
         }, status=400)
 
 @csrf_exempt
+def analyze_db(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed"}, status=405)
+
+    mode = request.GET.get("mode", "smart")
+    ALLOWED = {"smart", "fastest", "impact", "deadline"}
+    if mode not in ALLOWED:
+        return JsonResponse({"error": "Invalid sorting mode"}, status=400)
+    
+    db_data = Task.objects.all()
+
+    if not db_data.exists():
+        return JsonResponse({"ranked_tasks": [], "message": "No tasks available"}, status=200)
+
+    data = [
+        {
+            "id": t.id,
+            "title": t.title,
+            "due_date": t.due_date,
+            "estimated_hours": t.estimated_hours,
+            "importance": t.importance,
+            "dependencies": t.dependencies
+        }
+        for t in db_data
+    ]
+
+    try:
+        tasks, warnings = validate_tasks(data, require_id=True)
+
+        graph = build_graph(tasks)
+        detect_cycle(graph)
+
+        ranked = score_tasks(tasks, graph, mode)
+    
+        return JsonResponse({
+            "mode": mode,
+            "warnings": warnings,
+            "ranked_tasks": ranked
+        })
+    except ValidationError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    except Exception as e:
+        return JsonResponse({"error": "Internal server error", "detail": str(e)}, status=500)
+
+@csrf_exempt
 def suggest_tasks(request):
 
     if request.method != "GET":

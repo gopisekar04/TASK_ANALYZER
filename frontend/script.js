@@ -99,8 +99,7 @@ async function addTask() {
 }
 
 function renderResults(tasks) {
-  console.log(tasks);
-  
+
   const box = document.getElementById("result");
   box.innerHTML = "";
 
@@ -143,8 +142,8 @@ function renderResults(tasks) {
       <td>${t.importance ?? "-"}</td>
       <td>${t.due_date ?? "-"}</td>
       <td>${t.priority_score ?? "-"}</td>
-      <td class="reasons">${t.reasons.join(",") || "-"}</td>
-      <td">${flag}</td>
+      <td class="reasons">${t.reasons.join(" -- ") || "-"}</td>
+      <td>${flag}</td>
     `;
 
     tbody.appendChild(tr);
@@ -179,6 +178,28 @@ async function analyzeTask() {
     showError(err.message);
   }
 }
+
+async function analyzeFromDB() {
+  clearError();
+
+  const mode = document.getElementById("mode").value;
+
+  try {
+    const res = await fetch(API + `/analyze_db/?mode=${mode}`);
+
+    const text = await res.text();       // safe parse
+    const json = JSON.parse(text);
+
+    if (!res.ok) throw new Error(json.error || "Failed to analyze DB");
+
+    renderResults(json.ranked_tasks || []);
+
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+
 
 function showEmptyMessage() {
   const box = document.getElementById("taskList");
