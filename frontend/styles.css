@@ -1,0 +1,57 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  padding: 14px;
+}
+
+h1 { text-align: center; }
+
+.layout { display: flex; gap: 20px; }
+
+.panel {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+input, textarea, select {
+  width: 90%;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+textarea{
+  min-height: 300px;
+}
+
+button {
+  padding: 8px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#error { color: red; font-weight: bold; }
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 10px;
+  text-align: center;
+}
+td.reasons {
+  max-width: 250px;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+ul{
+  padding-inline-start: 0;
+}
+.task-list{
+  display: flex;
+  align-items: center;
+}
