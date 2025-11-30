@@ -36,7 +36,8 @@ def add_task(request):
 
         return JsonResponse({
             "message": 'Task added successfully',
-            "id": obj.id
+            "id": obj.id,
+            "Warnings": Warnings
         })
 
     except json.JSONDecodeError:

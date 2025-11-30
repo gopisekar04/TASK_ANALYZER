@@ -87,6 +87,7 @@ async function addTask() {
     appendTask({
       id: id,
       title: data.task.title,
+      due_date: data.task.due_date,
       estimated_hours: data.task.estimated_hours,
       importance: data.task.importance,
       dependencies: data.task.dependencies
@@ -182,6 +183,13 @@ async function analyzeTask() {
 async function analyzeFromDB() {
   clearError();
 
+  const taskListData = document.getElementById("taskList").value
+  
+  if (taskListData === undefined){
+    showError("No tasks yet")
+    return
+  }
+
   const mode = document.getElementById("mode").value;
 
   try {
@@ -216,6 +224,7 @@ async function clearAllTasks() {
 
     document.getElementById("taskList").innerHTML = "";
     showEmptyMessage();
+    clearError()
   } catch (e) {
     showError(e.message);
   }
@@ -230,7 +239,6 @@ function renderTasks(tasks) {
   }
 
   const table = document.createElement("table");
-  // table.style.width = "100%";
 
   table.innerHTML = `
     <thead>
@@ -253,6 +261,14 @@ function renderTasks(tasks) {
 
 async function suggest(){
   clearError();
+
+  const taskListData = document.getElementById("taskList").value
+  
+  if (taskListData === undefined){
+    showError("No tasks yet")
+    return
+  }
+  
 
   const mode = document.getElementById("mode").value;
 
